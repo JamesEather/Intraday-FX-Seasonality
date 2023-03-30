@@ -1,0 +1,76 @@
+# Testing Hourly Data for any sort of intraday hourly seasonality patterns, also to check Breedon and Ranaldo (2012)
+# observed that foreign currencies depreciate vs. the US dollar during their local working hours and appreciate 
+# during the local working hours of the US dollar. We test this by looking at average and median hourly returns over different
+# currencies and time frames.
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import datetime
+
+# define the file path
+file_path = r'\\svrau020mps00.oceania.corp.anz.com\eatherj$\My Documents\FX Forwards & eFICC Trading\System\AUDUSD Hourly Data.xlsx'
+
+# read in the Excel file
+df = pd.read_excel(file_path)
+
+# extract the date and time components of the Date column
+df['Date'] = pd.to_datetime(df['Date'], format='%d/%m/%Y %H:%M')
+df['Time'] = df['Date'].dt.time
+df['Date'] = df['Date'].dt.date
+
+# reorder the columns
+df = df[['Date', 'Time', 'Open', 'High', 'Low', 'Close']]
+
+# calculate the daily open price
+df['Daily Open'] = df.groupby('Date')['Open'].transform('first')
+
+# calculate hourly returns
+df['Hourly Return'] = df['Close'].pct_change()
+
+# plot the hourly returns
+fig, ax = plt.subplots(figsize=(10,6))
+ax.plot(df['Date'], df['Hourly Return'])
+ax.set_xlabel('Date')
+ax.set_ylabel('Hourly Return')
+ax.set_title('Hourly Returns')
+plt.show()
+
+# calculate hourly returns
+df['Hourly Return'] = df['Close'].pct_change()
+
+# group by hour of the day and calculate the mean hourly return
+hourly_returns = df.groupby(df['Time'].apply(lambda x: x.hour))['Hourly Return'].mean()
+
+# plot the hourly returns
+fig, ax = plt.subplots(figsize=(10,6))
+ax.bar(hourly_returns.index, hourly_returns)
+ax.set_xlabel('Hour of the Day')
+ax.set_ylabel('Mean Hourly Return')
+ax.set_title('Hourly Returns')
+plt.show()
+
+# calculate hourly returns
+df['Hourly Return'] = df['Close'].pct_change()
+
+# group by hour of the day and calculate the mean hourly return
+hourly_returns = df.groupby(df['Time'].apply(lambda x: x.hour))['Hourly Return'].mean()
+
+# plot the hourly returns
+fig, ax = plt.subplots(figsize=(10,6))
+ax.bar(hourly_returns.index, hourly_returns)
+ax.set_xlabel('Hour of the Day')
+ax.set_ylabel('Mean Hourly Return')
+ax.set_title('Average Hourly Returns')
+plt.show()
+
+# group by hour of the day and calculate the median hourly return
+hourly_returns = df.groupby(df['Time'].apply(lambda x: x.hour))['Hourly Return'].median()
+
+# plot the hourly returns
+fig, ax = plt.subplots(figsize=(10,6))
+ax.bar(hourly_returns.index, hourly_returns)
+ax.set_xlabel('Hour of the Day')
+ax.set_ylabel('Median Hourly Return')
+ax.set_title('Median Hourly Returns')
+plt.show()
